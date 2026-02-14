@@ -74,7 +74,8 @@ def login():
             next_page = url_for('home')
         return redirect(next_page)
     session["state"] = str(uuid.uuid4())
-    auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
+    #auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
+    auth_url = _build_auth_url(scopes=["openid", "profile", "email"], state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
 
 @app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
@@ -87,13 +88,28 @@ def authorized():
         cache = _load_cache()
         # TODO: Acquire a token from a built msal app, along with the appropriate redirect URI
         
-        result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
-            request.args["code"],
-            scopes=Config.SCOPE,
-            redirect_uri=url_for("authorized", _external=True, _scheme="https")
-        )
+#        result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
+#            request.args["code"],
+#            scopes=Config.SCOPE,
+#           redirect_uri=url_for("authorized", _external=True, _scheme="https")
+#        )
 
-        result = None
+#        result = None
+    result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
+        request.args["code"],
+        scopes=Config.SCOPE,
+        redirect_uri=url_for("authorized", _external=True, _scheme="https")
+    )
+    
+    if "error" in result:
+        return render_template("auth_error.html", result=result)
+    
+    session["user"] = result.get("id_token_claims")
+    user = User.query.filter_by(username="admin").first()
+    login_user(user)
+    _save_cache(cache)
+    return redirect(url_for("home"))
+        
         if "error" in result:
             return render_template("auth_error.html", result=result)
         session["user"] = result.get("id_token_claims")
