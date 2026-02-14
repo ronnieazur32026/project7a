@@ -38,6 +38,7 @@ class Config(object):
 
     # You can find the proper permission names from this document
     # https://docs.microsoft.com/en-us/graph/permissions-reference
-    SCOPE = ["User.Read"] # Only need to read user profile for this app
+    #SCOPE = ["User.Read"] # Only need to read user profile for this app
+    SCOPE = ["openid", "profile", "email"]
 
     SESSION_TYPE = "filesystem"  # Token cache will be stored in server-side session
