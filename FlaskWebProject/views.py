@@ -116,6 +116,14 @@ def logout():
             "?post_logout_redirect_uri=" + url_for("login", _external=True))
 
     return redirect(url_for('login'))
+    
+def _normalize_scopes(scopes):
+    #MSAL requires list[str] so this guarantees it
+    if scopes is None:
+        return []
+    if isinstance(scopes, str):
+        return scopes.split()              #"openid profile email" -> ["openid","profile","email"]
+    return list(scopes)                    #works for list/tuple/set/frozenset
 
 ##def _load_cache():
     # TODO: Load the cache from `msal`, if it exists
@@ -162,8 +170,15 @@ def _build_msal_app(cache=None, authority=None):
 #        state=state,
 #        redirect_uri=url_for("authorized", _external=True, _scheme="https://udacitycms-afh8c9c3d4cebyf6.westus2-01.azurewebsites.net/getAToken")
 #    )
+#def _build_auth_url(authority=None, scopes=None, state=None):
+#   safe_scopes = list(scopes) if isinstance(scopes, (set, frozenset)) else (scopes or [])
+#    return _build_msal_app(authority=authority).get_authorization_request_url(
+#        safe_scopes,
+#        state=state,
+#        redirect_uri=url_for("authorized", _external=True, _scheme="https")
+#    )
 def _build_auth_url(authority=None, scopes=None, state=None):
-    safe_scopes = list(scopes) if isinstance(scopes, (set, frozenset)) else (scopes or [])
+    safe_scopes = _normalize_scopes(scopes)
     return _build_msal_app(authority=authority).get_authorization_request_url(
         safe_scopes,
         state=state,
