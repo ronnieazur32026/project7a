@@ -74,8 +74,8 @@ def login():
             next_page = url_for('home')
         return redirect(next_page)
     session["state"] = str(uuid.uuid4())
-    #auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
-    auth_url = _build_auth_url(scopes=["openid", "profile", "email"], state=session["state"])
+    auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
+    #auth_url = _build_auth_url(scopes=["openid", "profile", "email"], state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
 
 @app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
