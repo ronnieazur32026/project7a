@@ -155,10 +155,17 @@ def _build_msal_app(cache=None, authority=None):
         token_cache=cache
     )
 
-def _build_auth_url(authority=None, scopes=None, state=None):
+#def _build_auth_url(authority=None, scopes=None, state=None):
     #build and return the authorization URL to start OAuth
+#    return _build_msal_app(authority=authority).get_authorization_request_url(
+#        scopes or [],
+#        state=state,
+#        redirect_uri=url_for("authorized", _external=True, _scheme="https://udacitycms-afh8c9c3d4cebyf6.westus2-01.azurewebsites.net/getAToken")
+#    )
+def _build_auth_url(authority=None, scopes=None, state=None):
+    safe_scopes = list(scopes) if isinstance(scopes, (set, frozenset)) else (scopes or [])
     return _build_msal_app(authority=authority).get_authorization_request_url(
-        scopes or [],
+        safe_scopes,
         state=state,
-        redirect_uri=url_for("authorized", _external=True, _scheme="https://udacitycms-afh8c9c3d4cebyf6.westus2-01.azurewebsites.net/getAToken")
+        redirect_uri=url_for("authorized", _external=True, _scheme="https")
     )
