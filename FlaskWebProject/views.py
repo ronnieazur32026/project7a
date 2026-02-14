@@ -110,19 +110,48 @@ def logout():
 
     return redirect(url_for('login'))
 
-def _load_cache():
+##def _load_cache():
     # TODO: Load the cache from `msal`, if it exists
-    cache = None
+##    cache = None
+ ##   return cache
+
+##def _save_cache(cache):
+    # TODO: Save the cache, if it has changed
+  ##  pass
+
+##def _build_msal_app(cache=None, authority=None):
+    # TODO: Return a ConfidentialClientApplication
+  ##  return None
+
+##def _build_auth_url(authority=None, scopes=None, state=None):
+    # TODO: Return the full Auth Request URL with appropriate Redirect URI
+  ##  return None
+
+def _load_cache():
+    #load MSAL token cache from the flask session (if present)
+    cache = msal.SerializableTokenCache()
+    if session.get("token_cache"):
+        cache.deserialize(session["token_cache"])
     return cache
 
 def _save_cache(cache):
-    # TODO: Save the cache, if it has changed
-    pass
+    #persist MSAL token cache back to the flask session if it changed
+    if cache and cache.has_state_changed:
+        session["token_cache"] = cache.serialize()
 
 def _build_msal_app(cache=None, authority=None):
-    # TODO: Return a ConfidentialClientApplication
-    return None
+    #build and return a MSAL ConfidentialClientApplication
+    return msal.ConfidentialClientApplication(
+        client_id=Config.CLIENT_ID,
+        authority=authority or Config.AUTHORITY,
+        client_credential=Config.CLIENT_SECRET,
+        token_cache=cache
+    )
 
 def _build_auth_url(authority=None, scopes=None, state=None):
-    # TODO: Return the full Auth Request URL with appropriate Redirect URI
-    return None
+    #build and return the authorization URL to start OAuth
+    return _build_msal_app(authority=authority).get_authorization_request_url(
+        scopes or [],
+        state=state,
+        redirect_uri=url_for("authorized", _external=True, _scheme="https://udacitycms-afh8c9c3d4cebyf6.westus2-01.azurewebsites.net/getAToken")
+    )
